@@ -21,9 +21,10 @@ public class Programming extends Menu {
         loadFromFile();
         week3 = new Library();
         list_s = new ArrayList<>();
+        ht = new Hashtable<>();
     }
     private void loadFromFile() {
-        try (BufferedReader reader = new BufferedReader(new FileReader("fruit.csv"))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader("fruit.txt"))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] data = line.split(" | ");
@@ -40,7 +41,7 @@ public class Programming extends Menu {
     }
 
     private void saveToFile() {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter("stu.csv"))) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("fruit.csv"))) {
             for (Fruit fruit : list_s) {
                 String line = String.format("%d,%s,%.2f,%d,%s",
                                             fruit.getFruitID(), fruit.getFruitName(),
@@ -54,6 +55,11 @@ public class Programming extends Menu {
         }
     }
 
+    public void displayFruit() {
+        for (Fruit fruit : list_s) {
+            System.out.println("%d\t|\t%s\t|\t%.2f\t|\t%d\t|\t%s");
+        }
+    }
 
     public void execute(int n) {
         switch (n) {
@@ -61,16 +67,29 @@ public class Programming extends Menu {
                 create();
                 break;
             case 2:
-
+                viewListOrder();
                 break;
             case 3:
-
+                shopping();
                 break;
             case 4:
                 saveToFile();
                 System.out.println("Bye~~~~");
                 System.exit(0);
         }
+    }
+
+    public boolean checkID(ArrayList<Fruit> list, int id) {
+        if (list.isEmpty()) {
+            return false;
+        } else {
+            for (Fruit fruit : list_s) {
+                if (fruit.getFruitID() == id) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public void create() {
@@ -86,6 +105,15 @@ public class Programming extends Menu {
         }
     }
 
+    private void displayListOrder(ArrayList<Order> list_o) {
+        double total = 0;
+        for (Order o : list_o) {
+            System.out.println("Id: " + o.getOrderID() + " - Customer of name: " + o.getOrderName() +
+                                " - Quantity: " + o.getOrderQuantity() + " - Price: " + o.getOrderPrice());
+            total += o.getOrderPrice() * o.getOrderQuantity();
+        }
+        System.out.println("Total: "+ total);
+    }
     public void viewListOrder(){
         if(ht.isEmpty()){
             System.out.println("No Order");
@@ -98,33 +126,44 @@ public class Programming extends Menu {
         }
     }
 
-    public void displayFruit(ArrayList<Fruit> list_s) {
-        for (Fruit fruit : list_s) {
-            System.out.println("%d\t|\t%s\t|\t%.2f\t|\t%d\t|\t%s");
-        }
-    }
-
-    public ArrayList<Fruit> listById(ArrayList<Fruit> list_s, int id) {
-        ArrayList<Fruit> list_Found = new ArrayList<Fruit>();
-
-        for (Fruit fruit : list_s) {
-            if (fruit.getFruitID() == id) {
-                list_Found.add(fruit);
-            }
-        }
-        return list_Found;
-    }
-
-    public boolean checkID(ArrayList<Fruit> list, int id) {
-        if (list.isEmpty()) {
-            return false;
+    /*public int generateID() {
+        int id = 0;
+        if (list_s.size() == 0) {
+            return 1;
         } else {
+
             for (Fruit fruit : list_s) {
-                if (fruit.getFruitID() == id) {
-                    return true;
+                if (fruit.getFruitID() == list_s.size()) {
+                    id = fruit.getFruitID() + 1;
                 }
             }
         }
-        return false;
+        return id;
+    }*/
+
+    public void shopping() {
+        viewListOrder();
+        displayFruit();
+        String name = week3.getString("Enter fruit name: ");
+        int quantityOrder = week3.getInt("Please input quantity", 1, 10);
+        ArrayList<Order> list_o = new ArrayList<>();
+        for (Fruit f : list_s) {
+            if (name.equals(f.getFruitName())) {
+                int id = f.getFruitID();
+                double price = f.getFruitPrice();
+                int quantity = f.getFruitQuantity();
+                if(quantityOrder>quantity){
+                    System.out.println("Quantity Order more than quantity");
+                    shopping();
+                }
+                list_o.add(new Order(id, name, price, quantityOrder));
+                displayListOrder(list_o);
+                String customer = week3.getString("Enter Customer of name: ");
+                ht.put(customer, list_o);
+                System.out.println("Add Successfull");
+            }
+        }
     }
+
+
 }
